@@ -1,26 +1,23 @@
 package com.uichesoh.podcast_applicattion;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import com.uichesoh.podcast_applicattion.apimodel.Entry;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 import com.uichesoh.podcast_applicattion.apimodel.Welcome;
 
-import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -52,64 +49,56 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    class ListViewAdapter extends BaseAdapter {
+    class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
 
         private Welcome podcasts;
         private Context context;
 
-        public ListViewAdapter(Context context,Welcome podcasts){
+        public RecyclerViewAdapter(Context context,Welcome podcasts){
             this.context = context;
             this.podcasts = podcasts;
         }
 
         @Override
-        public int getCount() {
+        public int getItemViewType(final int position) {
+            return R.layout.list_item;
+        }
+        @NonNull
+        @Override
+        public RecyclerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view= LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item,parent,false);
+            RecyclerViewHolder vh = new RecyclerViewHolder(view);
+            return vh;
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull RecyclerViewHolder holder, @SuppressLint("RecyclerView") int position) {
+            String title = podcasts.getFeed().getEntry().get(position).getTitle().getLabel();
+            holder.getView().setText(title);
+            holder.getView().setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Toast.makeText(context, podcasts.getFeed().getEntry().get(position).getTitle().getLabel(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        @Override
+        public int getItemCount() {
             return podcasts.getFeed().getEntry().size();
         }
 
-        @Override
-        public Object getItem(int pos) {
-            return podcasts.getFeed().getEntry().get(pos);
-        }
-
-        @Override
-        public long getItemId(int pos) {
-            return pos;
-        }
-
-        @Override
-        public View getView(int position, View view, ViewGroup viewGroup) {
-            if(view==null)
-            {
-                view= LayoutInflater.from(context).inflate(android.R.layout.simple_list_item_1,viewGroup,false);
-            }
-
-            TextView nameTxt = view.findViewById(android.R.id.text1);
-
-            final String title= podcasts.getFeed().getEntry().get(position).getTitle().getLabel();
-            Log.d("POPULATE","POPULATING VIEW WITH: "+title+" at position: "+position);
-            nameTxt.setText(title);
-
-            view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Toast.makeText(context, title, Toast.LENGTH_SHORT).show();
-                }
-            });
-
-            return view;
-        }
     }
 
-    private ListViewAdapter adapter;
-    private ListView mListView;
+    private RecyclerViewAdapter adapter;
+    private RecyclerView mRecyclerView;
     ProgressBar myProgressBar;
 
     private void populateListView(Welcome podcasts) {
-        mListView = findViewById(android.R.id.list);
-        Log.d("POPULATE","POPULATING VIEW WITH: "+podcasts);
-        adapter = new ListViewAdapter(this,podcasts);
-        mListView.setAdapter(adapter);
+        mRecyclerView = (RecyclerView) findViewById(R.id.recyclerView);
+        Log.d("POPULATE","POPULATING VIEW WITH: "+podcasts.toString());
+        adapter = new RecyclerViewAdapter(this,podcasts);
+        mRecyclerView.setAdapter(adapter);
     }
 
     @Override
