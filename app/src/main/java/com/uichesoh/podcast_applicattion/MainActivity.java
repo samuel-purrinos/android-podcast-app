@@ -1,36 +1,30 @@
 package com.uichesoh.podcast_applicattion;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
+import androidx.appcompat.app.*;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
 
-import android.widget.ProgressBar;
-import android.widget.Toast;
-import com.uichesoh.podcast_applicattion.apimodel.Welcome;
+import android.widget.*;
 
+import com.uichesoh.podcast_applicattion.apimodel.*;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
+import retrofit2.*;
 import retrofit2.converter.jackson.JacksonConverterFactory;
-import retrofit2.http.GET;
+import retrofit2.http.*;
 
 public class MainActivity extends AppCompatActivity {
     interface MyAPIService {
 
         @GET("/us/rss/toppodcasts/limit=100/genre=1310/json")
         Call<Welcome> getPodcasts();
+        @GET("/lookup?entity=podcastEpisode")
+        Call<EpisodeResponse> getEpisodes(@Query("id") String id);
     }
 
     static class RetrofitClientInstance {
@@ -135,6 +129,28 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, throwable.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    private EpisodeResponse getEpisodeList(String collectionId){
+        final EpisodeResponse[] episodes = new EpisodeResponse[1];
+        MyAPIService myAPIService = RetrofitClientInstance.getRetrofitInstance().create(MyAPIService.class);
+        Call<EpisodeResponse> call = myAPIService.getEpisodes(collectionId);
+        call.enqueue(new Callback<EpisodeResponse>() {
+
+            @Override
+            public void onResponse(Call<EpisodeResponse> call, Response<EpisodeResponse> response) {
+                System.out.println("RESULT COUNT : " + response.body().getResultCount()+" LIST SIZE: "+response.body().getResults().size());
+                myProgressBar.setVisibility(View.GONE);
+                episodes[0] = response.body();
+            }
+            @Override
+            public void onFailure(Call<EpisodeResponse> call, Throwable throwable) {
+                System.out.println("Error: " + throwable.getMessage());
+                myProgressBar.setVisibility(View.GONE);
+                Toast.makeText(MainActivity.this, throwable.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+        return episodes[0];
     }
 }
 
