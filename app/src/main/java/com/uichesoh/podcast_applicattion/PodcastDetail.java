@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.uichesoh.podcast_applicattion.apimodel.Entry;
@@ -64,7 +63,7 @@ public class PodcastDetail extends Fragment {
 
         // Load podcast image from URL using Glide or Picasso
         Glide.with(this)
-                .load(mPodcast.getIMImage().get(1).getLabel())
+                .load(mPodcast.getIMImage().get(2).getLabel())
                 .placeholder(android.R.drawable.ic_menu_gallery)
                 .error(android.R.drawable.ic_menu_report_image)
                 .into(podcastImageView);
@@ -75,11 +74,13 @@ public class PodcastDetail extends Fragment {
 
         // Set up RecyclerView for displaying podcast episodes
         RecyclerView episodesRecyclerView = view.findViewById(R.id.podcast_detail_episodes_recyclerview);
-        mEpisodeAdapter = new EpisodeAdapter(getActivity(), episodeResponse);
+        episodesRecyclerView.setHasFixedSize(true);
+        mEpisodeAdapter = new EpisodeAdapter(getActivity());
+        mEpisodeAdapter.setPodcast(mPodcast);
         episodesRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         episodesRecyclerView.setAdapter(mEpisodeAdapter);
         if (mPodcast != null) {
-            getEpisodeList(mPodcast.getID().getLabel());
+            getEpisodeList(mPodcast.getID().getAttributes().getIMID());
         }
         return view;
     }
@@ -92,7 +93,7 @@ public class PodcastDetail extends Fragment {
             @Override
             public void onResponse(Call<EpisodeResponse> call, Response<EpisodeResponse> response) {
                 episodeResponse = response.body();
-                mEpisodeAdapter.setData(episodeResponse);
+                mEpisodeAdapter.setEpisodes(episodeResponse);
             }
             @Override
             public void onFailure(Call<EpisodeResponse> call, Throwable throwable) {

@@ -1,14 +1,17 @@
 package com.uichesoh.podcast_applicattion;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.uichesoh.podcast_applicattion.apimodel.Entry;
 import com.uichesoh.podcast_applicattion.apimodel.EpisodeResponse;
 import com.uichesoh.podcast_applicattion.apimodel.PodcastEpisode;
 
@@ -19,10 +22,10 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.ViewHold
 
     private EpisodeResponse episodeResponse;
     private Context context;
+    private Entry podcast;
 
-    public EpisodeAdapter(Context context, EpisodeResponse episodeResponse) {
+    public EpisodeAdapter(Context context) {
         this.context = context;
-        this.episodeResponse = episodeResponse;
     }
 
     @NonNull
@@ -41,12 +44,15 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.ViewHold
         holder.dateTextView.setText((dateFormat.format(releaseDate)));
         holder.durationTextView.setText(String.valueOf((episode.getTrackTimeMillis() / 1000) / 60));
         holder.itemView.setOnClickListener(v -> {
-            new EpisodeAdapterListener(){
-                @Override
-                public void onEpisodeSelected(PodcastEpisode episode) {
+            if (context instanceof FragmentActivity) {
+                EpisodeFragment fragment = EpisodeFragment.newInstance(podcast,episode);
+                FragmentActivity activity = (FragmentActivity) context;
+                activity.getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_podcast_list, fragment)
+                        .addToBackStack(null)
+                        .commit();
+            }
 
-                }
-            };
         });
     }
 
@@ -76,8 +82,12 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.ViewHold
         void onEpisodeSelected(PodcastEpisode episode);
     }
 
-    public void setData(EpisodeResponse episodes) {
+    public void setEpisodes(EpisodeResponse episodes) {
         episodeResponse = episodes;
+        Log.d("EpisodeAdapter", "DATA SIZE " + episodes.getResultCount());
         notifyDataSetChanged();
+    }
+    public void setPodcast(Entry podcast) {
+        this.podcast = podcast;
     }
 }

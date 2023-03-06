@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.add(R.id.fragment_podcast_list, myFragment);
         fragmentTransaction.commit();
 
-        final ProgressBar myProgressBar= findViewById(R.id.myProgressBar);
+        final ProgressBar myProgressBar= findViewById(R.id.progressBar);
         myProgressBar.setIndeterminate(true);
         myProgressBar.setVisibility(View.VISIBLE);
 
