@@ -2,6 +2,8 @@ package com.uichesoh.podcast_applicattion;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.*;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
@@ -67,12 +69,19 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(@NonNull RecyclerViewHolder holder, @SuppressLint("RecyclerView") int position) {
-            String title = podcasts.getFeed().getEntry().get(position).getTitle().getLabel();
+            Entry podcast =podcasts.getFeed().getEntry().get(position);
+            String title = podcast.getTitle().getLabel();
             holder.getView().setText(title);
             holder.getView().setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(View view) {
-                    Toast.makeText(context, podcasts.getFeed().getEntry().get(position).getTitle().getLabel(), Toast.LENGTH_SHORT).show();
+                public void onClick(View v) {
+                    String collectionId = podcast.getID().getLabel();
+                    PodcastDetail fragment = PodcastDetail.newInstance(podcast);
+                    FragmentManager fragmentManager =  getSupportFragmentManager();
+                    FragmentTransaction transaction = fragmentManager.beginTransaction();
+                    transaction.replace(R.id.fragment_podcast_list, fragment);
+                    transaction.addToBackStack(null);
+                    transaction.commit();
                 }
             });
         }
@@ -90,8 +99,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void populateListView(Welcome podcasts) {
         mRecyclerView = (RecyclerView) findViewById(R.id.recyclerView);
-        Log.d("POPULATE","POPULATING VIEW WITH: "+podcasts.toString());
-        adapter = new RecyclerViewAdapter(this,podcasts);
+        Log.d("POPULATE", "POPULATING VIEW WITH: " + podcasts.toString());
+        adapter = new RecyclerViewAdapter(this, podcasts);
         mRecyclerView.setAdapter(adapter);
     }
 
@@ -131,26 +140,5 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private EpisodeResponse getEpisodeList(String collectionId){
-        final EpisodeResponse[] episodes = new EpisodeResponse[1];
-        MyAPIService myAPIService = RetrofitClientInstance.getRetrofitInstance().create(MyAPIService.class);
-        Call<EpisodeResponse> call = myAPIService.getEpisodes(collectionId);
-        call.enqueue(new Callback<EpisodeResponse>() {
-
-            @Override
-            public void onResponse(Call<EpisodeResponse> call, Response<EpisodeResponse> response) {
-                System.out.println("RESULT COUNT : " + response.body().getResultCount()+" LIST SIZE: "+response.body().getResults().size());
-                myProgressBar.setVisibility(View.GONE);
-                episodes[0] = response.body();
-            }
-            @Override
-            public void onFailure(Call<EpisodeResponse> call, Throwable throwable) {
-                System.out.println("Error: " + throwable.getMessage());
-                myProgressBar.setVisibility(View.GONE);
-                Toast.makeText(MainActivity.this, throwable.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
-        return episodes[0];
-    }
 }
 

@@ -1,10 +1,14 @@
 package com.uichesoh.podcast_applicattion.apimodel;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class Entry {
+public class Entry implements Parcelable {
     private Icon imName;
     private List<IMImage> imImage;
     private Icon summary;
@@ -17,6 +21,74 @@ public class Entry {
     private IMArtist imArtist;
     private Category category;
     private IMReleaseDate imReleaseDate;
+
+    public Entry() {
+    }
+
+    public Entry(Icon imName, List<IMImage> imImage, Icon summary, IMPrice imPrice, IMContentType imContentType, Icon rights, Icon title, Link link, ID id, IMArtist imArtist, Category category, IMReleaseDate imReleaseDate) {
+        this.imName = imName;
+        this.imImage = imImage;
+        this.summary = summary;
+        this.imPrice = imPrice;
+        this.imContentType = imContentType;
+        this.rights = rights;
+        this.title = title;
+        this.link = link;
+        this.id = id;
+        this.imArtist = imArtist;
+        this.category = category;
+        this.imReleaseDate = imReleaseDate;
+    }
+
+    protected Entry(Parcel in) {
+        imName = in.readParcelable(Icon.class.getClassLoader());
+        imImage = new ArrayList<>();
+        in.readList(imImage, IMImage.class.getClassLoader());
+        summary = in.readParcelable(Icon.class.getClassLoader());
+        imPrice = in.readParcelable(IMPrice.class.getClassLoader());
+        imContentType = in.readParcelable(IMContentType.class.getClassLoader());
+        rights = in.readParcelable(Icon.class.getClassLoader());
+        title = in.readParcelable(Icon.class.getClassLoader());
+        link = in.readParcelable(Link.class.getClassLoader());
+        id = in.readParcelable(ID.class.getClassLoader());
+        imArtist = in.readParcelable(IMArtist.class.getClassLoader());
+        category = in.readParcelable(Category.class.getClassLoader());
+        imReleaseDate = in.readParcelable(IMReleaseDate.class.getClassLoader());
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeParcelable((Parcelable) imName, flags);
+        dest.writeList(imImage);
+        dest.writeParcelable((Parcelable) summary, flags);
+        dest.writeParcelable((Parcelable) imPrice, flags);
+        dest.writeParcelable((Parcelable) imContentType, flags);
+        dest.writeParcelable((Parcelable) rights, flags);
+        dest.writeParcelable((Parcelable) title, flags);
+        dest.writeParcelable((Parcelable) link, flags);
+        dest.writeParcelable((Parcelable) id, flags);
+        dest.writeParcelable((Parcelable) imArtist, flags);
+        dest.writeParcelable((Parcelable) category, flags);
+        dest.writeParcelable((Parcelable) imReleaseDate, flags);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<Entry> CREATOR = new Creator<Entry>() {
+        @Override
+        public Entry createFromParcel(Parcel in) {
+            return new Entry(in);
+        }
+
+        @Override
+        public Entry[] newArray(int size) {
+            return new Entry[size];
+        }
+    };
+
 
     @JsonProperty("im:name")
     public Icon getIMName() {

@@ -2,63 +2,102 @@ package com.uichesoh.podcast_applicattion;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link PodcastDetail#newInstance} factory method to
- * create an instance of this fragment.
- */
+import com.bumptech.glide.Glide;
+import com.uichesoh.podcast_applicattion.apimodel.Entry;
+import com.uichesoh.podcast_applicattion.apimodel.EpisodeResponse;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class PodcastDetail extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private ImageView podcastImageView;
+    private TextView podcastTitleTextView;
+    private TextView podcastAuthorTextView;
+    private TextView podcastDescriptionTextView;
+    private Entry mPodcast;
+    private EpisodeAdapter mEpisodeAdapter;
+    private static final String ARG_ENTRY = "entry";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private EpisodeResponse episodeResponse;
 
-    public PodcastDetail() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment PodcastDetail.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static PodcastDetail newInstance(String param1, String param2) {
+    public static PodcastDetail newInstance(Entry podcastEntry) {
         PodcastDetail fragment = new PodcastDetail();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putParcelable(ARG_ENTRY, podcastEntry);
         fragment.setArguments(args);
         return fragment;
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            mPodcast = getArguments().getParcelable(ARG_ENTRY);
         }
     }
 
+    @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_podcast_detail, container, false);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_podcast_detail, container, false);
+
+        podcastImageView = view.findViewById(R.id.podcast_detail_imageview);
+        podcastTitleTextView = view.findViewById(R.id.podcast_detail_title_textview);
+        podcastAuthorTextView = view.findViewById(R.id.podcast_detail_author_textview);
+        podcastDescriptionTextView = view.findViewById(R.id.podcast_detail_description_textview);
+
+        // Load podcast image from URL using Glide or Picasso
+        Glide.with(this)
+                .load(mPodcast.getIMImage().get(1).getLabel())
+                .placeholder(android.R.drawable.ic_menu_gallery)
+                .error(android.R.drawable.ic_menu_report_image)
+                .into(podcastImageView);
+
+        podcastTitleTextView.setText(mPodcast.getTitle().getLabel());
+        podcastAuthorTextView.setText(mPodcast.getIMArtist().getLabel());
+        podcastDescriptionTextView.setText(mPodcast.getSummary().getLabel());
+
+        // Set up RecyclerView for displaying podcast episodes
+        RecyclerView episodesRecyclerView = view.findViewById(R.id.podcast_detail_episodes_recyclerview);
+        mEpisodeAdapter = new EpisodeAdapter(getActivity(), episodeResponse);
+        episodesRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        episodesRecyclerView.setAdapter(mEpisodeAdapter);
+        if (mPodcast != null) {
+            getEpisodeList(mPodcast.getID().getLabel());
+        }
+        return view;
+    }
+
+    private void getEpisodeList(String collectionId){
+        MainActivity.MyAPIService myAPIService = MainActivity.RetrofitClientInstance.getRetrofitInstance().create(MainActivity.MyAPIService.class);
+        Call<EpisodeResponse> call = myAPIService.getEpisodes(collectionId);
+        call.enqueue(new Callback<EpisodeResponse>() {
+
+            @Override
+            public void onResponse(Call<EpisodeResponse> call, Response<EpisodeResponse> response) {
+                episodeResponse = response.body();
+                mEpisodeAdapter.setData(episodeResponse);
+            }
+            @Override
+            public void onFailure(Call<EpisodeResponse> call, Throwable throwable) {
+                Log.e("PodcastDetail", throwable.toString());
+            }
+        });
     }
 }

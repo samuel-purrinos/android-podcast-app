@@ -1,8 +1,10 @@
 package com.uichesoh.podcast_applicattion.apimodel;
 
+import android.os.Parcelable;
+
 import java.util.List;
 
-public class EpisodeResponse {
+public class EpisodeResponse  {
         int resultCount;
         List<PodcastEpisode> results;
 
