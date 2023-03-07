@@ -57,12 +57,18 @@ public class EpisodeFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+        MainActivity homeActivity = (MainActivity) getActivity();
         View view = inflater.inflate(R.layout.fragment_podcast_episode, container, false);
 
         titleTextView = view.findViewById(R.id.episodeTitleTextView);
         podcastTitleTextView = view.findViewById(R.id.podcastTitleTextView);
+        podcastTitleTextView.setOnClickListener(v -> {
+            homeActivity.loadPodcastDetailScreen(entry);
+        });
         podcastAuthorTextView = view.findViewById(R.id.podcastAuthorTextView);
+        podcastAuthorTextView.setOnClickListener(v -> {
+            homeActivity.loadPodcastDetailScreen(entry);
+        });
         imageView = view.findViewById(R.id.podcastImageView);
         descriptionTextView = view.findViewById(R.id.episodeDescriptionTextView);
         playButton = view.findViewById(R.id.playButton);

@@ -121,13 +121,7 @@ public class MainActivity extends AppCompatActivity {
             holder.getView().setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    String collectionId = podcast.getID().getLabel();
-                    PodcastDetail fragment = PodcastDetail.newInstance(podcast);
-                    FragmentManager fragmentManager =  getSupportFragmentManager();
-                    FragmentTransaction transaction = fragmentManager.beginTransaction();
-                    transaction.replace(R.id.fragment_podcast_list, fragment);
-                    transaction.addToBackStack(null);
-                    transaction.commit();
+                    loadPodcastDetailScreen(podcast);
                 }
             });
         }
@@ -161,17 +155,11 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.add(R.id.fragment_podcast_list, myFragment);
         fragmentTransaction.commit();
 
-        View headerView = findViewById(R.id.header);
+        View headerView = findViewById(R.id.toolbar);
         headerView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                FragmentManager fragmentManager = getSupportFragmentManager();
-                FragmentTransaction transaction = fragmentManager.beginTransaction();
-                PodcastList podcastListFragment = new PodcastList();
-                transaction.replace(R.id.fragment_podcast_list, podcastListFragment);
-                transaction.addToBackStack(null);
-                transaction.commit();
-                loadPodcastData();
+                reloadHomeScreen();
             }
         });
 
@@ -180,7 +168,26 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void loadPodcastData(){
+    public void reloadHomeScreen(){
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        PodcastList podcastListFragment = new PodcastList();
+        transaction.replace(R.id.fragment_podcast_list, podcastListFragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
+        loadPodcastData();
+    }
+
+    public void loadPodcastDetailScreen(Entry podcast){
+        PodcastDetail fragment = PodcastDetail.newInstance(podcast);
+        FragmentManager fragmentManager =  getSupportFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.replace(R.id.fragment_podcast_list, fragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
+    }
+
+    public void loadPodcastData(){
         final ProgressBar myProgressBar= findViewById(R.id.progressBar);
         myProgressBar.setIndeterminate(true);
         myProgressBar.setVisibility(View.VISIBLE);
