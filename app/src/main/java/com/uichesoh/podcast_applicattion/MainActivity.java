@@ -2,6 +2,7 @@ package com.uichesoh.podcast_applicattion;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.*;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
@@ -160,10 +161,29 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.add(R.id.fragment_podcast_list, myFragment);
         fragmentTransaction.commit();
 
+        View headerView = findViewById(R.id.header);
+        headerView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FragmentManager fragmentManager = getSupportFragmentManager();
+                FragmentTransaction transaction = fragmentManager.beginTransaction();
+                PodcastList podcastListFragment = new PodcastList();
+                transaction.replace(R.id.fragment_podcast_list, podcastListFragment);
+                transaction.addToBackStack(null);
+                transaction.commit();
+                loadPodcastData();
+            }
+        });
+
+        loadPodcastData();
+
+
+    }
+
+    private void loadPodcastData(){
         final ProgressBar myProgressBar= findViewById(R.id.progressBar);
         myProgressBar.setIndeterminate(true);
         myProgressBar.setVisibility(View.VISIBLE);
-
         RetrofitClientInstance.setContext(this);
         MyAPIService myAPIService = RetrofitClientInstance.getRetrofitInstance().create(MyAPIService.class);
 
@@ -200,6 +220,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, throwable.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
+
     }
 
 }
