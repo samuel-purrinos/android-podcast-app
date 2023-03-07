@@ -48,6 +48,7 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.ViewHold
                 EpisodeFragment fragment = EpisodeFragment.newInstance(podcast,episode);
                 FragmentActivity activity = (FragmentActivity) context;
                 activity.getSupportFragmentManager().beginTransaction()
+                        .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left)
                         .replace(R.id.fragment_podcast_list, fragment)
                         .addToBackStack(null)
                         .commit();

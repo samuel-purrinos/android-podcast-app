@@ -18,6 +18,7 @@ import android.view.*;
 import android.widget.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.uichesoh.podcast_applicattion.apimodel.*;
 
 import java.io.File;
@@ -154,12 +155,12 @@ public class MainActivity extends AppCompatActivity {
         PodcastList myFragment = new PodcastList();
         fragmentTransaction.add(R.id.fragment_podcast_list, myFragment);
         fragmentTransaction.commit();
-
-        View headerView = findViewById(R.id.toolbar);
+        View headerView = findViewById(R.id.header);
         headerView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 reloadHomeScreen();
+                loadPodcastData();
             }
         });
 
@@ -171,6 +172,7 @@ public class MainActivity extends AppCompatActivity {
     public void reloadHomeScreen(){
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left);
         PodcastList podcastListFragment = new PodcastList();
         transaction.replace(R.id.fragment_podcast_list, podcastListFragment);
         transaction.addToBackStack(null);
@@ -182,6 +184,7 @@ public class MainActivity extends AppCompatActivity {
         PodcastDetail fragment = PodcastDetail.newInstance(podcast);
         FragmentManager fragmentManager =  getSupportFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left);
         transaction.replace(R.id.fragment_podcast_list, fragment);
         transaction.addToBackStack(null);
         transaction.commit();
