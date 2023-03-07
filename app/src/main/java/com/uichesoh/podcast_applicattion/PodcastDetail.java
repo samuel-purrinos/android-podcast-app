@@ -16,9 +16,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uichesoh.podcast_applicattion.apimodel.Entry;
 import com.uichesoh.podcast_applicattion.apimodel.EpisodeResponse;
+import com.uichesoh.podcast_applicattion.apimodel.Welcome;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -86,14 +89,31 @@ public class PodcastDetail extends Fragment {
     }
 
     private void getEpisodeList(String collectionId){
+        MainActivity.RetrofitClientInstance.setContext(getActivity());
         MainActivity.MyAPIService myAPIService = MainActivity.RetrofitClientInstance.getRetrofitInstance().create(MainActivity.MyAPIService.class);
         Call<EpisodeResponse> call = myAPIService.getEpisodes(collectionId);
         call.enqueue(new Callback<EpisodeResponse>() {
 
             @Override
             public void onResponse(Call<EpisodeResponse> call, Response<EpisodeResponse> response) {
-                episodeResponse = response.body();
-                mEpisodeAdapter.setEpisodes(episodeResponse);
+                if(response.isSuccessful()) {
+                    ResponseBody cachedResponse = response.raw().cacheResponse().body();
+                    if (cachedResponse != null) {
+                        try {
+                            String cachedJson = cachedResponse.string();
+                            ObjectMapper objectMapper = new ObjectMapper();
+                            System.out.println("Response came from cache");
+                            episodeResponse = objectMapper.readValue(cachedJson, EpisodeResponse.class);
+                            mEpisodeAdapter.setEpisodes(episodeResponse);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        System.out.println("Response came from network");
+                        episodeResponse = response.body();
+                        mEpisodeAdapter.setEpisodes(episodeResponse);
+                    }
+                }
             }
             @Override
             public void onFailure(Call<EpisodeResponse> call, Throwable throwable) {

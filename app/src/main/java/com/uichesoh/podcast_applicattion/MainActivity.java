@@ -14,17 +14,22 @@ import android.view.*;
 
 import android.widget.*;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uichesoh.podcast_applicattion.apimodel.*;
 
+import okhttp3.Cache;
+import okhttp3.OkHttpClient;
+import okhttp3.ResponseBody;
 import retrofit2.*;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 import retrofit2.http.*;
 
 public class MainActivity extends AppCompatActivity {
     interface MyAPIService {
-
+        @Headers("Cache-Control: public, max-age=86400")
         @GET("/us/rss/toppodcasts/limit=100/genre=1310/json")
         Call<Welcome> getPodcasts();
+        @Headers("Cache-Control: public, max-age=86400")
         @GET("/lookup?entity=podcastEpisode")
         Call<EpisodeResponse> getEpisodes(@Query("id") String id);
     }
@@ -33,11 +38,23 @@ public class MainActivity extends AppCompatActivity {
 
         private static Retrofit retrofit;
         private static final String BASE_URL = "https://itunes.apple.com/";
+        private static final int cacheSize = 10 * 1024 * 1024; // 10 MB
+        private static Context context;
 
+        public static void setContext(Context context) {
+            if(RetrofitClientInstance.context == null) {
+                RetrofitClientInstance.context = context;
+            }
+        }
         public static Retrofit getRetrofitInstance() {
             if (retrofit == null) {
+                Cache cache = new Cache(context.getCacheDir(), cacheSize);
+                OkHttpClient client = new OkHttpClient.Builder()
+                        .cache(cache)
+                        .build();
                 retrofit = new Retrofit.Builder()
                         .baseUrl(BASE_URL)
+                        .client(client)
                         .addConverterFactory(JacksonConverterFactory.create())
                         .build();
             }
@@ -119,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
         myProgressBar.setIndeterminate(true);
         myProgressBar.setVisibility(View.VISIBLE);
 
-        /*Create handle for the RetrofitInstance interface*/
+        RetrofitClientInstance.setContext(this);
         MyAPIService myAPIService = RetrofitClientInstance.getRetrofitInstance().create(MyAPIService.class);
 
         Call<Welcome> call = myAPIService.getPodcasts();
@@ -127,9 +144,26 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onResponse(Call<Welcome> call, Response<Welcome> response) {
-                System.out.println("Response: " + response.body());
-                myProgressBar.setVisibility(View.GONE);
-                populateListView(response.body());
+                if(response.isSuccessful()){
+                    ResponseBody cachedResponse = response.raw().cacheResponse().body();
+                    if(cachedResponse != null) {
+                        try {
+                            String cachedJson = cachedResponse.string();
+                            ObjectMapper objectMapper = new ObjectMapper();
+                            Welcome cachedPodcasts = objectMapper.readValue(cachedJson, Welcome.class);
+                            System.out.println("Response came from cache");
+                            myProgressBar.setVisibility(View.GONE);
+                            populateListView(cachedPodcasts);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        System.out.println("Response came from network");
+                        myProgressBar.setVisibility(View.GONE);
+                        populateListView(response.body());
+                    }
+
+                }
             }
             @Override
             public void onFailure(Call<Welcome> call, Throwable throwable) {
