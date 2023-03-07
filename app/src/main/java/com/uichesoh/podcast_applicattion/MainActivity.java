@@ -8,6 +8,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.*;
@@ -17,8 +19,13 @@ import android.widget.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uichesoh.podcast_applicattion.apimodel.*;
 
+import java.io.File;
+import java.io.IOException;
+
 import okhttp3.Cache;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.ResponseBody;
 import retrofit2.*;
 import retrofit2.converter.jackson.JacksonConverterFactory;
@@ -48,17 +55,38 @@ public class MainActivity extends AppCompatActivity {
         }
         public static Retrofit getRetrofitInstance() {
             if (retrofit == null) {
-                Cache cache = new Cache(context.getCacheDir(), cacheSize);
-                OkHttpClient client = new OkHttpClient.Builder()
+                File httpCacheDirectory = new File(context.getCacheDir(), "responses");
+                int cacheSize = 10 * 1024 * 1024; // 10 MiB
+                Cache cache = new Cache(httpCacheDirectory, cacheSize);
+
+                OkHttpClient okHttpClient = new OkHttpClient.Builder()
                         .cache(cache)
+                        .addInterceptor(new Interceptor() {
+                            @Override
+                            public okhttp3.Response intercept(Chain chain) throws IOException {
+                                Request request = chain.request();
+                                if (isNetworkAvailable()) {
+                                    request = request.newBuilder().header("Cache-Control", "public, max-age=" + 60).build();
+                                } else {
+                                    request = request.newBuilder().header("Cache-Control", "public, only-if-cached, max-stale=" + 60 * 60 * 24).build();
+                                }
+                                return chain.proceed(request);
+                            }
+                        })
                         .build();
+
                 retrofit = new Retrofit.Builder()
                         .baseUrl(BASE_URL)
-                        .client(client)
+                        .client(okHttpClient)
                         .addConverterFactory(JacksonConverterFactory.create())
                         .build();
             }
             return retrofit;
+        }
+        public static boolean isNetworkAvailable() {
+            ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+            return activeNetworkInfo != null && activeNetworkInfo.isConnected();
         }
     }
 
@@ -145,10 +173,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<Welcome> call, Response<Welcome> response) {
                 if(response.isSuccessful()){
-                    ResponseBody cachedResponse = response.raw().cacheResponse().body();
-                    if(cachedResponse != null) {
+                    okhttp3.Response cachedResponse = response.raw().cacheResponse();
+                    if(cachedResponse != null && cachedResponse.body() != null) {
                         try {
-                            String cachedJson = cachedResponse.string();
+                            String cachedJson = cachedResponse.body().string();
                             ObjectMapper objectMapper = new ObjectMapper();
                             Welcome cachedPodcasts = objectMapper.readValue(cachedJson, Welcome.class);
                             System.out.println("Response came from cache");

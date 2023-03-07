@@ -97,10 +97,10 @@ public class PodcastDetail extends Fragment {
             @Override
             public void onResponse(Call<EpisodeResponse> call, Response<EpisodeResponse> response) {
                 if(response.isSuccessful()) {
-                    ResponseBody cachedResponse = response.raw().cacheResponse().body();
-                    if (cachedResponse != null) {
+                    okhttp3.Response cachedResponse = response.raw().cacheResponse();
+                    if (cachedResponse != null && cachedResponse.body() != null) {
                         try {
-                            String cachedJson = cachedResponse.string();
+                            String cachedJson = cachedResponse.body().string();
                             ObjectMapper objectMapper = new ObjectMapper();
                             System.out.println("Response came from cache");
                             episodeResponse = objectMapper.readValue(cachedJson, EpisodeResponse.class);
