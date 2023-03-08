@@ -18,55 +18,51 @@ import java.util.List;
 public class PodcastAdapter extends ArrayAdapter<String> implements Filterable {
 
     private List<Entry> podcasts;
-    private List<String> suggestions;
+    private List<String> mOriginalValues;
+    private List<String> mDisplayedValues;
 
     public PodcastAdapter(Context context, ArrayList<Entry> apiResponse) {
         super(context, android.R.layout.simple_dropdown_item_1line);
         this.podcasts = apiResponse;
+        this.mDisplayedValues = new ArrayList<>();
     }
 
     @Override
     public int getCount() {
-        return podcasts.size();
+        return mDisplayedValues.size();
     }
 
     @Override
     public String getItem(int position) {
-        return podcasts.get(position).getTitle().getLabel();
+        return mDisplayedValues.get(position);
     }
 
     @Override
     public Filter getFilter() {
         return new Filter() {
-
             @Override
             protected FilterResults performFiltering(CharSequence constraint) {
                 FilterResults results = new FilterResults();
-
+                List<String> filteredList = new ArrayList<>();
                 if (constraint == null || constraint.length() == 0) {
-                    results.values = podcasts;
-                    results.count = podcasts.size();
+                    filteredList.addAll(mOriginalValues);
                 } else {
-                    List<String> sugerencias = new ArrayList<>();
-
-                    for (Entry singlePodcast : podcasts) {
-                        if (singlePodcast.getTitle().getLabel().toLowerCase().contains(constraint.toString().toLowerCase())) {
-                            sugerencias.add(singlePodcast.getTitle().getLabel());
+                    String filterPattern = constraint.toString().toLowerCase().trim();
+                    for (String item : mOriginalValues) {
+                        if (item.toLowerCase().contains(filterPattern)) {
+                            filteredList.add(item);
                         }
                     }
-
-                    results.values = sugerencias;
-                    suggestions = sugerencias;
-                    results.count = sugerencias.size();
                 }
-
+                results.values = filteredList;
+                results.count = filteredList.size();
                 return results;
             }
 
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
-                clear();
-                addAll((List<String>) results.values);
+                mDisplayedValues.clear();
+                mDisplayedValues.addAll((List<String>) results.values);
                 notifyDataSetChanged();
             }
         };
@@ -75,8 +71,13 @@ public class PodcastAdapter extends ArrayAdapter<String> implements Filterable {
 
     public void setPocasts(List<Entry> entry) {
         this.podcasts = entry;
+        this.mOriginalValues = new ArrayList<>();
+        for(Entry singlePodcast : podcasts){
+            this.mOriginalValues.add(singlePodcast.getTitle().getLabel());
+        }
         notifyDataSetChanged();
     }
+
 
     public List<Entry> getPodcasts() {
         return podcasts;
