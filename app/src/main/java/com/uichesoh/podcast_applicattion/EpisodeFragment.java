@@ -76,6 +76,7 @@ public class EpisodeFragment extends Fragment {
         if (episode != null) {
             titleTextView.setText(episode.getTrackName());
             descriptionTextView.setText(episode.getDescription());
+            /**
             playButton.setOnClickListener(v -> {
                 MediaPlayer mediaPlayer = new MediaPlayer();
                 try {
@@ -90,14 +91,14 @@ public class EpisodeFragment extends Fragment {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            });
+            });*/
         }
 
         if (entry != null) {
             podcastTitleTextView.setText(entry.getTitle().getLabel());
             podcastAuthorTextView.setText(entry.getIMArtist().getLabel());
             Glide.with(this)
-                    .load(entry.getIMImage().get(2).getLabel())
+                    .load(entry.getIMImage().get(1).getLabel())
                     .into(imageView);
         }
 

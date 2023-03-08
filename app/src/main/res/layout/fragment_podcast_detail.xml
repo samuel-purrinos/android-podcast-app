@@ -10,10 +10,11 @@
 
                 <ImageView
                     android:id="@+id/podcast_detail_imageview"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_width="170dp"
+                    android:layout_height="170dp"
                     android:scaleType="centerCrop"
-                    android:adjustViewBounds="true" />
+                    android:layout_gravity="center_horizontal"
+                    android:src="@drawable/ic_launcher_background" />
 
                 <TextView
                     android:id="@+id/podcast_detail_title_textview"
