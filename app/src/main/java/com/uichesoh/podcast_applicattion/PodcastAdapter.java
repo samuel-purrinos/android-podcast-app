@@ -1,9 +1,14 @@
 package com.uichesoh.podcast_applicattion;
 
 import android.content.Context;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.uichesoh.podcast_applicattion.apimodel.Entry;
 
@@ -27,7 +32,7 @@ public class PodcastAdapter extends ArrayAdapter<String> implements Filterable {
 
     @Override
     public String getItem(int position) {
-        return suggestions.get(position);
+        return podcasts.get(position).getTitle().getLabel();
     }
 
     @Override
@@ -67,8 +72,13 @@ public class PodcastAdapter extends ArrayAdapter<String> implements Filterable {
         };
     }
 
+
     public void setPocasts(List<Entry> entry) {
         this.podcasts = entry;
         notifyDataSetChanged();
+    }
+
+    public List<Entry> getPodcasts() {
+        return podcasts;
     }
 }
