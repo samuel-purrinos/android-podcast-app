@@ -34,6 +34,7 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 import retrofit2.http.*;
 
 public class MainActivity extends AppCompatActivity {
+    private PodcastList podcastList;
     interface MyAPIService {
         @Headers("Cache-Control: public, max-age=86400")
         @GET("/us/rss/toppodcasts/limit=100/genre=1310/json")
@@ -152,8 +153,8 @@ public class MainActivity extends AppCompatActivity {
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        PodcastList myFragment = new PodcastList();
-        fragmentTransaction.add(R.id.fragment_podcast_list, myFragment);
+        podcastList = new PodcastList();
+        fragmentTransaction.add(R.id.fragment_podcast_list, podcastList);
         fragmentTransaction.commit();
         View headerView = findViewById(R.id.header);
         headerView.setOnClickListener(new View.OnClickListener() {
@@ -219,6 +220,7 @@ public class MainActivity extends AppCompatActivity {
                         System.out.println("Response came from network");
                         myProgressBar.setVisibility(View.GONE);
                         populateListView(response.body());
+                        podcastList.setPodcasts(response.body());
                     }
 
                 }
