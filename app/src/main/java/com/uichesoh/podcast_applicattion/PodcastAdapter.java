@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import com.uichesoh.podcast_applicattion.apimodel.Entry;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class PodcastAdapter extends ArrayAdapter<String> implements Filterable {
@@ -24,6 +25,7 @@ public class PodcastAdapter extends ArrayAdapter<String> implements Filterable {
     public PodcastAdapter(Context context, ArrayList<Entry> apiResponse) {
         super(context, android.R.layout.simple_dropdown_item_1line);
         this.podcasts = apiResponse;
+        this.setPocasts(apiResponse);
         this.mDisplayedValues = new ArrayList<>();
     }
 
@@ -62,7 +64,7 @@ public class PodcastAdapter extends ArrayAdapter<String> implements Filterable {
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
                 mDisplayedValues.clear();
-                mDisplayedValues.addAll((List<String>) results.values);
+                mDisplayedValues.addAll((Collection<? extends String>) results.values);
                 notifyDataSetChanged();
             }
         };

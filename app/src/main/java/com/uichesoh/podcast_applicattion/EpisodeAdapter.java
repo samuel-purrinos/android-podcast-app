@@ -79,10 +79,6 @@ public class EpisodeAdapter extends RecyclerView.Adapter<EpisodeAdapter.ViewHold
         }
     }
 
-    public interface EpisodeAdapterListener {
-        void onEpisodeSelected(PodcastEpisode episode);
-    }
-
     public void setEpisodes(EpisodeResponse episodes) {
         episodeResponse = episodes;
         Log.d("EpisodeAdapter", "DATA SIZE " + episodes.getResultCount());

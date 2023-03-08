@@ -66,4 +66,8 @@ public class PodcastList extends Fragment {
         this.podcastAdapter.notifyDataSetChanged();
     }
 
+    public void setRecyclerViewAdapter(RecyclerView.Adapter adapter){
+        recyclerView.setAdapter(adapter);
+    }
+
 }

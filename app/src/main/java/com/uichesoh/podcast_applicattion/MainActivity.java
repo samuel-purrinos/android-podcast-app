@@ -2,7 +2,6 @@ package com.uichesoh.podcast_applicattion;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.*;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,7 +17,6 @@ import android.view.*;
 import android.widget.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.android.material.appbar.MaterialToolbar;
 import com.uichesoh.podcast_applicattion.apimodel.*;
 
 import java.io.File;
@@ -123,8 +121,7 @@ public class MainActivity extends AppCompatActivity {
             holder.getView().setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    loadPodcastDetailScreen(podcast);
-                }
+                    loadPodcastDetailScreen(podcast);}
             });
         }
 
@@ -144,6 +141,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d("POPULATE", "POPULATING VIEW WITH: " + podcasts.toString());
         adapter = new RecyclerViewAdapter(this, podcasts);
         mRecyclerView.setAdapter(adapter);
+        podcastList.setRecyclerViewAdapter(adapter);
     }
 
     @Override
